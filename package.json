@@ -1,0 +1,19 @@
+{
+  "name": "node-streams",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Play around node streams",
+  "scripts": {
+    "run:crime": "node ./crime/index.js london_crime_by_lsoa.csv",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "vmalyshev0@gmail.com",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.6.0"
+  },
+  "dependencies": {
+    "csv-parse": "^5.5.0"
+  }
+}
