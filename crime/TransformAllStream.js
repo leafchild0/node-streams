@@ -63,14 +63,14 @@ export class TransformAllStream extends Transform {
         this.push(result, 'utf8')
 
         // Top crime areas
-        this.topCrimesInArea = new Map([...this.topCrimesInArea.entries()].sort().slice(0, this.top));
+        const topCrimesInArea = this.calculateTopCrimes();
         this.push('What are the most dangerous areas of London?', 'utf8')
-        this.push(JSON.stringify(Object.keys(Object.fromEntries(this.topCrimesInArea))), 'utf8')
+        this.push(topCrimesInArea, 'utf8')
 
         // Top crimes per area
-        const areaAndTopCrime = this.calculateTopCrimesPerArea();
+        const areaAndTopCrime = JSON.stringify(this.calculateTopCrimesPerArea());
         this.push('What is the most common crime per area?', 'utf8')
-        this.push(JSON.stringify(areaAndTopCrime), 'utf8')
+        this.push(areaAndTopCrime, 'utf8')
 
         // Let's return top areas only and skip others
         const leastCommon = [...this.crimesPerCategory.entries()].sort((v1, v2) => v1[1] - v2[1]).slice(0, 1).flat()[0]
@@ -78,6 +78,11 @@ export class TransformAllStream extends Transform {
         this.push(leastCommon, 'utf8')
 
         callback()
+    }
+
+    calculateTopCrimes() {
+        const sorted = new Map([...this.topCrimesInArea.entries()].sort().slice(0, this.top));
+        return JSON.stringify(Object.keys(Object.fromEntries(sorted)))
     }
 
     calculateTopCrimesPerArea() {
