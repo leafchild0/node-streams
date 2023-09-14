@@ -5,6 +5,7 @@ import {TopCrimeAreas} from "./TopCrimeAreas.js";
 import {PassThrough} from "stream";
 import {TopCrimePerArea} from "./TopCrimePerArea.js";
 import {LessCommonCrime} from "./LessCommonCrime.js";
+import {TransformAllStream} from "./TransformAllStream.js";
 
 const filename = process.argv[2]
 const csvParser = parse({ columns: true })
@@ -23,7 +24,8 @@ const monitorDataStream = (message) => {
     const monitor = new PassThrough()
 
     monitor.on('data', (chunk) => {
-        console.log(`${message}: ${chunk.toString()}`)
+        if (message) console.log(`${message}: ${chunk.toString()}`)
+        else console.log(chunk.toString())
     })
     return monitor
 }
@@ -53,3 +55,12 @@ inputStream
     .pipe(new LessCommonCrime())
     .pipe(monitorDataStream('What is the least common crime?'))
     .on('error', (e) => console.error(e))
+
+console.time()
+
+// All in one Transform
+inputStream
+    .pipe(new TransformAllStream())
+    .pipe(monitorDataStream())
+    .on('error', (e) => console.error(e))
+.on('finish', () => console.timeEnd())
