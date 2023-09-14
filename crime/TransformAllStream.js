@@ -11,35 +11,18 @@ export class TransformAllStream extends Transform {
         this.topCrimesInArea = new Map()
     }
 
-    _transform(chunk, encoding, callback) {
-
-        const value = parseInt(chunk.value);
-        if (value > 0) {
-
-            // Year crimes
-            this.topYearCrimes(chunk.year);
-            //Crimes in area
-            this.topCrimesInArea(chunk.borough);
-            // Crimes per area
-            this.topCrimesPerArea(chunk.borough, chunk.major_category);
-            // Less common crimes
-            this.lessCommonCrimes(chunk.major_category);
-        }
-        callback()
-    }
-
-    topYearCrimes(year) {
+    populateTopYearCrimes(year) {
         const intYear = parseInt(year)
         let amount = this.crimesPerYear.get(intYear) || 0
         this.crimesPerYear.set(intYear, amount + 1)
     }
 
-    topCrimesInArea(area) {
+    populateTopCrimesInArea(area) {
         const amount = this.topCrimesInArea.get(area) || 0
         this.topCrimesInArea.set(area, amount + 1)
     }
 
-    topCrimesPerArea(area, category) {
+    populateTopCrimesPerArea (area, category) {
         const data = this.crimesPerArea.get(area) || {}
 
         if (data[category]) {
@@ -50,9 +33,26 @@ export class TransformAllStream extends Transform {
         this.crimesPerArea.set(area, data)
     }
 
-    lessCommonCrimes(category) {
+    populateLessCommonCrimes(category) {
         const data = this.crimesPerCategory.get(category) || 0
         this.crimesPerCategory.set(category, data + 1)
+    }
+
+    _transform(chunk, encoding, callback) {
+
+        const value = parseInt(chunk.value);
+        if (value > 0) {
+
+            // Year crimes
+            this.populateTopYearCrimes(chunk.year);
+            //Crimes in area
+            this.populateTopCrimesInArea(chunk.borough);
+            // Crimes per area
+            this.populateTopCrimesPerArea(chunk.borough, chunk.major_category);
+            // Less common crimes
+            this.populateLessCommonCrimes(chunk.major_category);
+        }
+        callback()
     }
 
     _flush(callback) {
@@ -81,7 +81,7 @@ export class TransformAllStream extends Transform {
     }
 
     calculateTopCrimes() {
-        const sorted = new Map([...this.topCrimesInArea.entries()].sort().slice(0, this.top));
+        const sorted = new Map([...this.topCrimesInArea.entries()].sort().slice(0, 3));
         return JSON.stringify(Object.keys(Object.fromEntries(sorted)))
     }
 
